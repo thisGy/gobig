@@ -20,10 +20,11 @@ Day[1] => array(
 */
 
 
-class PHUL extends Workout{
+class PHUL{
 	public $day;
 	public $todays_workout;
-
+	public $power_day;
+	public $hypertrophy_day;
 
 	function __construct(){
 		//Set Each Exercise Target Sets/Reps
@@ -32,9 +33,12 @@ class PHUL extends Workout{
 
 		$this->setWorkouts();
 
+		$this->setWorkoutRules();
+
+
 	}
 	function setWorkoutDay($day){
-		$this->day;
+		$this->day = $day;
 	}
 	
 	function getWorkoutDay(){
@@ -50,31 +54,33 @@ class PHUL extends Workout{
 	
 	function setRepScheme(){
 		$this->rep_scheme = array(
-			'3-4' => '3-5',
-			'3-4' => '6-10',
-			'2-3' => '5-8',
-			'2-3' => '6-10',
-			'3-5' => '10-15',
-			'4'   => '6-10',
-			'3-4' => '8-12',
-			'3-4' => '10-15',
+			array('3-4' => '3-5'),
+			array('3-4' => '6-10'),
+			array('2-3' => '5-8'),
+			array('2-3' => '6-10'),
+			array('3-5' => '10-15'),
+			array('4'   => '6-10'),
+			array('3-4' => '8-12'),
+			array('3-4' => '10-15'),
 			);
 	}
 
-	function generateWorkoutSets(){
+	function setWorkoutRules(){
 		$rep_schemes = $this->rep_scheme;
-		foreach($rep_schemes as $sets => $reps){
-			if(is_numeric($sets)){
-				for($i=1; $i<=$sets; $i++){
-					$rules["".$sets."x".$reps.""]["Set ".$i.""] = $reps;
+		foreach($rep_schemes as $rep_scheme){
+			foreach($rep_scheme as $sets => $reps){
+				if(is_numeric($sets)){
+					for($i=1; $i<=$sets; $i++){
+						$rules["".$sets."x".$reps.""]["Set ".$i.""] = $reps;
+					}
+				}else{
+					$set_range = explode('-',$sets);
+					$upper_limit = $set_range[1];
+					for($i=1; $i<=$upper_limit; $i++){
+						$rules["".$sets."x".$reps.""]["Set ".$i.""] = $reps;
+					}				
 				}
-			}else{
-				$set_range = explode('-',$sets);
-				$upper_limit = $set_range[1];
-				for($i=1; $i<=$upper_limit; $i++){
-					$rules["".$sets."x".$reps.""]["Set ".$i.""] = $reps;
-				}				
-			}
+		    }
 		}
 		$this->rules = $rules;
 	}
@@ -143,9 +149,77 @@ class PHUL extends Workout{
 		}
 	}
 
+	function setWorkoutType(){
+		if ($this->day == 1 || $this->day == 2){
+			$this->power_day 		= true;
+			$this->hypertrophy_day  = false;
+		}else if ($this->day == 4 || $this->day == 5){
+			$this->power_day 		= false;
+			$this->hypertrophy_day  = true;			
+		}else{
+			$this->power_day 		= false;
+			$this->hypertrophy_day  = false;
+		}
+	}
 
+	function setTodaysWorkoutRules(){
+		$rules = $this->rules;
+		$todays_workout = array();
 
+		switch($this->day){
+			case '1':
+				$exercises = $this->todays_workout;				
+				foreach($exercises as $exercise){
+					//echo "$exercises - $exercise<br/>";
+					if($exercise == 'Barbell Bench Press' || $exercise == 'Bent Over Row'){
+						$todays_workout[$exercise]=$rules['3-4x3-5'];
+					}else if($exercise == 'Overhead Press'){
+						$todays_workout[$exercise]=$rules['2-3x5-8'];
+					}else{
+						$todays_workout[$exercise]=$rules['3-4x6-10'];
+					}
+				}
+
+			break;
+			
+			case '2':
+			break;
+			
+			case '3':
+			break;						
+			
+			case '4':
+			break;
+			
+			case '5':
+			break;
+
+			default:
+			$this->todays_workout = "Off day!  Hurray!";
+			break;		
+		}
+		$this->todays_workout = $todays_workout;
+	}
+
+	function generateTodaysWorkout(){
+		$workouts = $this->workouts;
+		$todays_workout = $workouts[$this->day];
+		$this->todays_workout = $todays_workout;
+		$this->setTodaysWorkoutRules();
+	}
 
 }
+
+$PHUL = new PHUL;
+$PHUL->setWorkoutDay(1);
+$PHUL->setWorkoutType();
+
+$PHUL->generateTodaysWorkout();
+
+
+?><pre><?php
+print_r($PHUL);
+?></pre><?php
+
 
 ?>
